@@ -18,6 +18,18 @@ CORS(app)
 '''
 db_drop_and_create_all()
 
+def getAllDrinksShort():
+    drinks = Drink.query.all()
+    return [drink.short() for drink in drinks]
+
+
+
+def getAllDrinksDetails():
+    drinks = Drink.query.all()
+    return [drink.long() for drink in drinks]
+
+
+
 ## ROUTES
 '''
 @TODO implement endpoint
@@ -29,12 +41,10 @@ db_drop_and_create_all()
 '''
 @app.route("/drinks")
 def getAllDrinks():
-    drinks = Drink.query.all()
     return jsonify({
         'success': True,
-        'drinks': [drink.short() for drink in drinks]
+        'drinks': getAllDrinks()
     }), 200
-
 
 
 
@@ -53,11 +63,11 @@ def getAllDrinks():
 @app.route('/drinks-detail')
 @requires_auth('get:drinks-detail')
 def get_drink_detail(payload):
-    drinks = Drink.query.all()
+    
 
     return jsonify({
         'success': True,
-        'drinks': [drink.long() for drink in drinks]
+        'drinks': getAllDrinksDetails()
     }), 200
 
 
