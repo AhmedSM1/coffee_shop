@@ -73,9 +73,6 @@ def get_token_auth_header():
 
 
 
-
-
-
 '''
 @TODO implement check_permissions(permission, payload) method
     @INPUTS
