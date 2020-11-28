@@ -18,17 +18,6 @@ CORS(app)
 '''
 db_drop_and_create_all()
 
-def getAllDrinksShort():
-    drinks = Drink.query.all()
-    return [drink.short() for drink in drinks]
-
-
-
-def getAllDrinksDetails():
-    drinks = Drink.query.all()
-    return [drink.long() for drink in drinks]
-
-
 
 ## ROUTES
 '''
@@ -41,12 +30,11 @@ def getAllDrinksDetails():
 '''
 @app.route("/drinks")
 def getAllDrinks():
+    drinks = Drink.query.all()
     return jsonify({
         'success': True,
-        'drinks': getAllDrinks()
+        'drinks': [drink.short() for drink in drinks]
     }), 200
-
-
 
 
 
@@ -63,11 +51,11 @@ def getAllDrinks():
 @app.route('/drinks-detail')
 @requires_auth('get:drinks-detail')
 def get_drink_detail(payload):
-    
-
+    drinks = Drink.query.all()
     return jsonify({
         'success': True,
-        'drinks': getAllDrinksDetails()
+        'drinks': [drink.long() for drink in drinks]
+
     }), 200
 
 
@@ -84,15 +72,15 @@ def get_drink_detail(payload):
 
 @app.route('/drinks', methods=['POST'])
 @requires_auth('post:drinks')
-def create_drink():
-    request = request.get_json()
-    if not('title' in request and 'recipe' in request):
+def create_drink(payload):
+    body = request.get_json()
+    if not('title' in body and 'recipe' in body):
         abort(422)
 
     try:
         drink = Drink(
-            title = request['title'],
-            recipe = json.dumps(request['recipe'])
+            title = body['title'],
+            recipe = json.dumps(body['recipe'])
         )
         drink.insert()
     except BaseException:
@@ -115,18 +103,18 @@ def create_drink():
 
 @app.route('/drinks/<int:id>', methods=['PATCH'])
 @requires_auth('patch:drinks')
-def update_drink(id):
-    request = request.get_json()
+def update_drink(payload,id):
+    body = request.get_json()
     drink = Drink.query.filter(Drink.id == id).one_or_none()
     if not drink:
         abort(404)
     try:
-        title = request.get('title')
-        recipe = request.get('recipe')
+        title = body.get('title')
+        recipe = body.get('recipe')
         if title:
             drink.title = title
         if recipe:
-            drink.recipe = json.dumps(request['recipe'])
+            drink.recipe = json.dumps(body['recipe'])
 
         drink.update()
     except BaseException:
@@ -150,7 +138,7 @@ def update_drink(id):
 
 @app.route('/drinks/<int:id>', methods=['DELETE'])
 @requires_auth('delete:drinks')
-def delete_drink(id):
+def delete_drink(payload,id):
     drink = Drink.query.filter(Drink.id == id).one_or_none()
     if not drink:
         abort(404)
